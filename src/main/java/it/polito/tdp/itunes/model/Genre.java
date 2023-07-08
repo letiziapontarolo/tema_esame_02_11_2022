@@ -3,11 +3,23 @@ package it.polito.tdp.itunes.model;
 public class Genre {
 	private Integer genreId;
 	private String name;
+	private double durataMinima;
 	
-	public Genre(Integer genreId, String name) {
+	public Genre(Integer genreId, String name, Double durataMinima) {
 		super();
 		this.genreId = genreId;
 		this.name = name;
+		this.durataMinima = durataMinima;
+	}
+	
+	
+
+	public double getDurataMinima() {
+		return durataMinima;
+	}
+
+	public void setDurataMinima(double durataMinima) {
+		this.durataMinima = durataMinima;
 	}
 
 	public Integer getGenreId() {

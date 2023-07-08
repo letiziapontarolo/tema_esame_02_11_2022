@@ -4,9 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
 import it.polito.tdp.itunes.model.Album;
 import it.polito.tdp.itunes.model.Artist;
 import it.polito.tdp.itunes.model.Genre;
@@ -76,19 +77,30 @@ public class ItunesDAO {
 		return result;
 	}
 	
-	public List<Track> getAllTracks(){
-		final String sql = "SELECT * FROM Track";
-		List<Track> result = new ArrayList<Track>();
+	public void getVertici(Map<Integer, Track> trackIdMap, double min, double max, String genere){
+		final String sql = "SELECT track.*, COUNT(distinct playlisttrack.PlaylistId) AS numeroPlaylist "
+				+ "FROM track, genre, playlisttrack "
+				+ "WHERE track.Milliseconds > ?*1000 "
+				+ "AND track.Milliseconds < ?*1000 "
+				+ "AND track.GenreId = genre.GenreId "
+				+ "AND genre.Name = (?) "
+				+ "AND playlisttrack.TrackId = track.TrackId "
+				+ "GROUP BY track.TrackId";
 		
 		try {
 			Connection conn = DBConnect.getConnection();
 			PreparedStatement st = conn.prepareStatement(sql);
+			st.setDouble(1, min);
+			st.setDouble(2, max);
+			st.setString(3, genere);
 			ResultSet res = st.executeQuery();
 
 			while (res.next()) {
-				result.add(new Track(res.getInt("TrackId"), res.getString("Name"), 
+				Track t = new Track(res.getInt("TrackId"), res.getString("Name"), 
 						res.getString("Composer"), res.getInt("Milliseconds"), 
-						res.getInt("Bytes"),res.getDouble("UnitPrice")));
+						res.getInt("Bytes"),res.getDouble("UnitPrice"), res.getInt("numeroPlaylist"));
+				
+				trackIdMap.put(res.getInt("TrackId"), t);			
 			
 			}
 			conn.close();
@@ -96,11 +108,13 @@ public class ItunesDAO {
 			e.printStackTrace();
 			throw new RuntimeException("SQL Error");
 		}
-		return result;
 	}
 	
 	public List<Genre> getAllGenres(){
-		final String sql = "SELECT * FROM Genre";
+		final String sql = "SELECT genre.*, MIN(track.Milliseconds)/1000 AS minimo "
+				+ "FROM genre, track "
+				+ "WHERE genre.GenreId = track.GenreId "
+				+ "GROUP BY genre.Name";
 		List<Genre> result = new LinkedList<>();
 		
 		try {
@@ -109,7 +123,7 @@ public class ItunesDAO {
 			ResultSet res = st.executeQuery();
 
 			while (res.next()) {
-				result.add(new Genre(res.getInt("GenreId"), res.getString("Name")));
+				result.add(new Genre(res.getInt("GenreId"), res.getString("Name"), res.getDouble("minimo")));
 			}
 			conn.close();
 		} catch (SQLException e) {

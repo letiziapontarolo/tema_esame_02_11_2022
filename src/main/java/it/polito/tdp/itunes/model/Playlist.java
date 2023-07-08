@@ -4,11 +4,13 @@ public class Playlist {
 	private Integer playlistId;
 	private String name;
 	
+	
 	public Playlist(Integer playlistId, String name) {
 		super();
 		this.playlistId = playlistId;
 		this.name = name;
 	}
+	
 
 	public Integer getPlaylistId() {
 		return playlistId;

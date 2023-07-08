@@ -1,6 +1,3 @@
-/**
- * Sample Skeleton for 'Scene.fxml' Controller Class
- */
 
 package it.polito.tdp.itunes;
 
@@ -32,7 +29,7 @@ public class FXMLController {
     private Button btnPlaylist; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbGenere"
-    private ComboBox<?> cmbGenere; // Value injected by FXMLLoader
+    private ComboBox<String> cmbGenere; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDTOT"
     private TextField txtDTOT; // Value injected by FXMLLoader
@@ -48,11 +45,68 @@ public class FXMLController {
 
     @FXML
     void doCalcolaPlaylist(ActionEvent event) {
+    	
 
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	
+    	txtResult.clear();
+    	
+    	String genere = cmbGenere.getSelectionModel().getSelectedItem();
+    	 if (genere == null) {
+    	 txtResult.appendText("Perfavore seleziona un genere!\n");
+    	 return;
+    	 }
+    	 
+    	 String n = txtMin.getText();
+    	 double min = 0;
+    	 if (n == "") {
+    	  txtResult.setText("Perfavore inserisci una durata minima!\n");
+    	  return;
+    	  }
+    	 try {
+    	  min = Double.parseDouble(n);
+    	  } catch (NumberFormatException e) {
+    	  e.printStackTrace();
+    	  return;
+    	  }
+    	 if (min < 0) {
+    	  txtResult.appendText("Perfavore inserisci una durata minima positiva!\n");
+    	  return;
+    	  }
+    	 
+    	 String m = txtMax.getText();
+    	 double max = 0;
+    	 if (m == "") {
+    	  txtResult.setText("Perfavore inserisci una durata massima!\n");
+    	  return;
+    	  }
+    	 try {
+    	  max = Double.parseDouble(m);
+    	  } catch (NumberFormatException e) {
+    	  e.printStackTrace();
+    	  return;
+    	  }
+    	 if (max < 0) {
+    	  txtResult.appendText("Perfavore inserisci una durata massima positiva!\n");
+    	  return;
+    	  }
+    	 
+    	 if (this.model.valutaMinimo(genere, min) == false) {
+    	  txtResult.appendText("Perfavore inserisci una durata minima maggiore!\n");
+       	  return;
+    	 }
+    	 
+    	 this.model.creaGrafo(min, max, genere);
+    	 
+    	 txtResult.appendText("Grafo creato!\n");
+    	 txtResult.appendText("#VERTICI: " + this.model.numeroVertici() + "\n");
+    	 txtResult.appendText("#ARCHI: " + this.model.numeroArchi() + "\n");
+    	 txtResult.appendText("\n" + this.model.calcolaComponentiConnesse());
+
+
 
     }
 
@@ -70,6 +124,7 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	cmbGenere.getItems().addAll(this.model.listaGeneri());
     }
 
 }
